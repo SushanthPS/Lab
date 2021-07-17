@@ -1,0 +1,28 @@
+SELECT COMMAND
+===============
+
+names='Shadow formless sting glitch Req Quit'
+echo
+PS3='Select names: '
+select name in $names
+do
+        if [ $name == Quit ]
+        then
+                break
+        else
+                echo
+                echo "hello $name"
+        fi
+done
+
+((./filename.sh))
+
+
+DIALOG COMMANDS
+=================
+
+dialog --title "Qwerty123" --msgbox "Hi" 10 20
+dialog --title "Qwerty123" --yesno "Wassup" 10 20
+dialog --title "Qwerty123" --infobox "dumb?" 10 20
+dialog --title "Qwerty123" --menu "Enter the option" 10 20 3 1 red, 2 green, 3 blue
+dialog --title "Qwerty123" --checklist "Select option" 10 20 3 1 red on, 2 green off, 3 blue on

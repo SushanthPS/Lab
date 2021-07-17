@@ -1,0 +1,2 @@
+This is the write command and the command is written by sushanth and Tejas
+It allows us to write in a particular file

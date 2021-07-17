@@ -1,0 +1,36 @@
+1) Display third column of filename.csv without printing the header "CGPA" also sort the same
+A) cut -d , -f 3 shadow.csv | grep -v CGPA | sort -g
+
+2) Display only current time using date command
+A) date +'%r'
+
+3) Use Unique with all possible options
+A) uniq -u shadowuni.csv
+   uniq -D shadowuni.csv
+   uniq -d shadowuni.csv
+
+4) Print number of lines for ls -l command
+A) 
+
+5) Display USN from 7-14 along with other fields
+A) head -n 15 shadowusn.csv | tail -n 8
+
+6) Write a shell script to print only date and time from date command?
+A) echo The date and time is $(date +%D..%r)
+
+7) Write a shell script to check whether a number is +ve or -ve?
+A) echo "Enter a Number:"
+   read n
+   if [ $n -gt 0 ]
+   then
+	   echo "Number is positive"
+   else if [ $n -eq 0 ]
+   then
+	   echo "Number is Zero"
+   else 
+	   echo "Number is negative"
+   fi
+   fi
+
+
+

@@ -1,0 +1,43 @@
+FILE=~/.mybackup
+NOW=`date +"%d-%m-%Y"`
+OUT="`echo $USER.$HOSTNAME`.$NOW.tar.gz"
+TAR=`which tar`
+ 
+
+MTO="nixbackup@somedom.com"
+MSUB="Backup (`echo $USER @ $HOSTNAME`) as on `date`"
+MES=~/tmp/mybackup.txt
+MATT=~/tmp/$OUT
+
+
+[ ! -d ~/tmp ] && mkdir ~/tmp || :
+if [ -f $FILE ]; then
+ IN="`cat $FILE | grep -E -v "^#"`"
+else
+ echo "File $FILE does not exists"
+ exit 3
+fi
+ 
+if [ "$IN" == "" ]; then
+ echo "$FILE is empty, please add list of files/directories to backup"
+ echo "Use mybackupadd script"
+ exit 2
+fi
+ 
+$TAR -zcf ~/tmp/$OUT $IN >/dev/null
+
+echo "Backup successfully done. Please see attached file." > $MES
+echo "" >> $MES
+echo "Backup file: $OUT" >> $MES
+echo "" >> $MES
+ 
+which mutt > /dev/null
+if [ $? -eq 0 ]; then
+ # now mail backup file with this attachment
+ mutt -s "$MSUB" -a "$MATT" $MTO < $MES
+else
+ echo "Command mutt not found, cannot send an email with attachment"
+fi
+ 
+/bin/rm -f $MATT
+/bin/rm -f $MES

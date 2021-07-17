@@ -1,0 +1,132 @@
+
+VIM EDITOR
+x - delete character
+u - undo
+ctrl-R - redo
+A - to append text at the end
+:wq - to save and exit
+:w - save
+:q! - trash changes
+dw - moves cursor to beggining and delete
+2w -  to move the cursor 2 words forward
+3e - moves the cursor end of third word forward
+0 - move to the start of the line
+d2w - deletes 2 words
+2dd - deletes 2nd line
+
+p - puts the previously deleted text after the cursor
+re - to replace the letter with e
+ce - deleted the word and places you in insert mode
+G - to move to the bottom of the file
+gg - to move to the start of the file
+% - to find matching ),],}
+:s/old/new where old gets replaced by new
+/ = backward search
+? = forward search
+:| = to run shell commands like :!dir , :!ls
+:w-Test (filename)
+v - starts visual mode
+:r - filename will insert the content into the current file
+R - to replace more than one character
+y - to copy text in visual mode and p to paste
+yw - yanks one word
+o - ctrl-w jumps fron 1 window to another
+R - enters replace mode unto <ESC> is pressed
+
+x - delete character
+u - undo
+ctrl-R - redo
+A - to append text at the end
+:wq - to save and exit
+:w - save
+:q! - trash changes
+dw - moves cursor to beggining and delete
+2w -  to move the cursor 2 words forward
+3e - moves the cursor end of third word forward
+0 - move to the start of the line
+d2w - deletes 2 words
+2dd - deletes 2nd line
+
+p - puts the previously deleted text after the cursor
+re - to replace the letter with e
+ce - deleted the word and places you in insert mode
+G - to move to the bottom of the file
+gg - to move to the start of the file
+% - to find matching ),],}
+:s/old/new where old gets replaced by new
+/ = backward search
+? = forward search
+:| = to run shell commands like :!dir , :!ls
+:w-Test (filename)
+v - starts visual mode
+:r - filename will insert the content into the current file
+R - to replace more than one character
+y - to copy text in visual mode and p to paste
+yw - yanks one word
+o - ctrl-w jumps fron 1 window to another
+R - enters replace mode unto <ESC> is pressed
+
+ 
+
+
+Syntax: COMMAND OPTION ARGUMENT
+$man - manual of commands
+mkdir - to create a new directory
+who - 
+ls - list
+cal - calender
+uname - OS name
+time
+date 
+
+
+
+who: Shows who is logged into the system.
+who -u = lists the user who are logged in.
+who -q = all login names and number of users logged on.
+
+ls: lists all the files in current directory.
+ls -l = lists all the files in the long format
+ls -f = does not sort the files and no color is displayed.
+ls -a = lists all the files in the directory including the hidden files.
+ls -t = sorts by modification time.
+ls -u = unsorted list
+ls -R = lists all subdirectories also.
+
+cal: used to open a calendar inside the terminal.
+cal -h = removes higlight of todays date.
+cal -m = displays the specified month.
+cal -w = prints the number of weeks below each column.
+cal -y = displays a calendar of specified year.
+
+uname: displays the system information.
+uname -a = print all information.
+uname -s = prints the kernel name.
+uname -v = prints the kernel version.
+uname -p = prints proccessor type.
+uname -o = prints the operating system.
+
+time: shows the system resource usage.
+time -o = write all information to a file.
+time -f = format the output of the time.
+time -v = prints the version number of the time program.
+
+date: displays the current date and time.
+date -r = displays the modification time of a file.
+date -s = set the time descibed by String value.
+
+bc : opens a calculator inside the terminal.
+bc -i = runs bc in interactive mode.
+bc -q = runs bc with normal gnu welcome.
+
+cat : displays the contents of a file
+
+cd : used to enter a directory or leave it.
+
+mkdir : create a directory
+
+wc : counts the number of words.
+wc -c = counts character in the file
+(wc filename) 
+
+

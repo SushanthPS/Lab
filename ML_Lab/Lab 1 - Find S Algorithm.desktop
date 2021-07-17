@@ -1,0 +1,70 @@
+********************************************Find-S Algorithm*********************************************
+
+
+import csv
+
+
+# ### Read File:
+# Load the csv file and asign each row to a data frame
+# Also print the row to see the dataset (optional)
+
+# In[ ]:
+
+
+a=[]
+with open('/home/cmruuser/Varsha/Lab 1/dataset1.csv') as csfile:
+    reader = csv.reader(csfile)
+    for row in reader:
+        a.append(row)
+        print(row)
+num_attributes=len(a[0])-1
+
+
+# 1. The most general hypothesis is represented by:
+#     ```['?', '?', '?', '?', '?', '?']```
+# 2. The most specific hypothesis is represented by:
+#     ```['0', '0', '0', '0', '0', '0']```
+
+# In[ ]:
+
+
+print("\nThe most general hypothesis:",["?"]*num_attributes)
+print("The most specific hypothesis:",["0"]*num_attributes)
+
+
+# ### Algorithm Implementation:
+# Implementation of the above algorithm by updaing the hypothesis at each iteration and output the final hypothesis.
+
+# In[ ]:
+
+
+hypothesis=a[0][:-1]
+print("\nFind S: Finding a maximally specific hypothesis:")
+for i in range (len(a)):
+    if a[i][num_attributes] == "1":
+        for j in range(num_attributes):
+            if a[i][j]!=hypothesis[j]:
+                hypothesis[j]='?'
+    print("The taining example no:",i+1," the hyposthesis is:",hypothesis)
+print("\nThe maximally specific hypohthesis for training set is")
+print(hypothesis)
+
+
+********************************************Output*********************************************
+
+['sunny', 'warm', 'normal', 'strong', 'warm', 'same', '1']
+['sunny', 'warm', 'high', 'strong', 'warm', 'same', '1']
+['rainy', 'cold', 'high', 'strong', 'warm', 'change', '0']
+['sunny', 'warm', 'high', 'strong', 'cool', 'change', '1']
+
+The most general hypothesis: ['?', '?', '?', '?', '?', '?']
+The most specific hypothesis: ['0', '0', '0', '0', '0', '0']
+
+Find S: Finding a maximally specific hypothesis:
+The taining example no: 1  the hyposthesis is: ['sunny', 'warm', 'normal', 'strong', 'warm', 'same']
+The taining example no: 2  the hyposthesis is: ['sunny', 'warm', '?', 'strong', 'warm', 'same']
+The taining example no: 3  the hyposthesis is: ['sunny', 'warm', '?', 'strong', 'warm', 'same']
+The taining example no: 4  the hyposthesis is: ['sunny', 'warm', '?', 'strong', '?', '?']
+
+The maximally specific hypohthesis for training set is
+['sunny', 'warm', '?', 'strong', '?', '?']

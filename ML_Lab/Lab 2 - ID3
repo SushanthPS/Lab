@@ -1,0 +1,419 @@
+import pandas as pd
+from pprint import pprint
+df = pd.read_csv('/home/cmruuser/Varsha/Lab 2/dataset.csv')
+print("\n Input Data Set is:\n", df)
+t = df.keys()[-1]
+print('Target Attribute is: ', t)
+# Get the attribute names from input dataset
+attribute_names = list(df.keys())
+#Remove the target attribute from the attribute names list
+attribute_names.remove(t) 
+print('Predicting Attributes: ', attribute_names)
+#Function to calculate the entropy of collection S
+import math
+def entropy(probs):  
+    return sum( [-prob*math.log(prob, 2) for prob in probs])
+
+#Function to calulate the entropy of the given Data Sets/List with 
+#respect to target attributes
+def entropy_of_list(ls,value):  
+    from collections import Counter
+    cnt = Counter(x for x in ls)# Counter calculates the propotion of class
+    print('Target attribute class count(Yes/No)=',dict(cnt))
+    total_instances = len(ls)  
+    print("Total no of instances/records associated with {0} is: {1}".format(value,total_instances ))
+    probs = [x / total_instances for x in cnt.values()]  # x means no of YES/NO
+    print("Probability of Class {0} is: {1:.4f}".format(min(cnt),min(probs)))
+    print("Probability of Class {0} is: {1:.4f}".format(max(cnt),max(probs)))
+    return entropy(probs) # Call Entropy
+def information_gain(df, split_attribute, target_attribute,battr):
+    print("\n\n-----Information Gain Calculation of ",split_attribute, " --------") 
+    df_split = df.groupby(split_attribute) # group the data based on attribute values
+    glist=[]
+    for gname,group in df_split:
+        print('Grouped Attribute Values \n',group)
+        glist.append(gname) 
+    
+    glist.reverse()
+    nobs = len(df.index) * 1.0   
+    df_agg1=df_split.agg({target_attribute:lambda x:entropy_of_list(x, glist.pop())})
+    df_agg2=df_split.agg({target_attribute :lambda x:len(x)/nobs})
+    
+    df_agg1.columns=['Entropy']
+    df_agg2.columns=['Proportion']
+    
+    # Calculate Information Gain:
+    new_entropy = sum( df_agg1['Entropy'] * df_agg2['Proportion'])
+    if battr !='S':
+        old_entropy = entropy_of_list(df[target_attribute],'S-'+df.iloc[0][df.columns.get_loc(battr)])
+    else:
+        old_entropy = entropy_of_list(df[target_attribute],battr)
+    return old_entropy - new_entropy
+def id3(df, target_attribute, attribute_names, default_class=None,default_attr='S'):
+    
+    from collections import Counter
+    cnt = Counter(x for x in df[target_attribute])# class of YES /NO
+    
+    ## First check: Is this split of the dataset homogeneous?
+    if len(cnt) == 1:
+        return next(iter(cnt))  # next input data set, or raises StopIteration when EOF is hit.
+    
+    ## Second check: Is this split of the dataset empty? if yes, return a default value
+    elif df.empty or (not attribute_names):
+        return default_class  # Return None for Empty Data Set
+    
+    ## Otherwise: This dataset is ready to be devied up!
+    else:
+        # Get Default Value for next recursive call of this function:
+        default_class = max(cnt.keys()) #No of YES and NO Class
+        # Compute the Information Gain of the attributes:
+        gainz=[]
+        for attr in attribute_names:
+            ig= information_gain(df, attr, target_attribute,default_attr)
+            gainz.append(ig)
+            print('Information gain of ',attr,' is : ',ig)
+        
+        index_of_max = gainz.index(max(gainz))               # Index of Best Attribute
+        best_attr = attribute_names[index_of_max]            # Choose Best Attribute to split on
+        print("\nAttribute with the maximum gain is: ", best_attr)
+        # Create an empty tree, to be populated in a moment
+        tree = {best_attr:{}} # Initiate the tree with best attribute as a node 
+        remaining_attribute_names =[i for i in attribute_names if i != best_attr]
+        
+        # Split dataset-On each split, recursively call this algorithm.Populate the empty tree with subtrees, which
+        # are the result of the recursive call
+        for attr_val, data_subset in df.groupby(best_attr):
+            subtree = id3(data_subset,target_attribute, remaining_attribute_names,default_class,best_attr)
+            tree[best_attr][attr_val] = subtree
+        return tree
+    from pprint import pprint
+tree = id3(df,t,attribute_names)
+print("\nThe Resultant Decision Tree is:")
+pprint(tree)
+
+**********************************************output**************************************************
+Input Data Set is:
+      Outlook Temperature Humidity    Wind Target
+0      sunny         hot     high    weak     no
+1      sunny         hot     high  Strong     no
+2   overcast         hot     high    weak    yes
+3       rain        mild     high    weak    yes
+4       rain        cool   normal    weak    yes
+5       rain        cool   normal  Strong     no
+6   overcast        cool   normal  Strong    yes
+7      sunny        mild     high    weak     no
+8      sunny        cool   normal    weak    yes
+9       rain        mild   normal    weak    yes
+10     sunny        mild   normal  Strong    yes
+11  overcast        mild     high  Strong    yes
+12  overcast         hot   normal    weak    yes
+Target Attribute is:  Target
+Predicting Attributes:  ['Outlook', 'Temperature', 'Humidity', 'Wind']
+
+
+-----Information Gain Calculation of  Outlook  --------
+Grouped Attribute Values 
+      Outlook Temperature Humidity    Wind Target
+2   overcast         hot     high    weak    yes
+6   overcast        cool   normal  Strong    yes
+11  overcast        mild     high  Strong    yes
+12  overcast         hot   normal    weak    yes
+Grouped Attribute Values 
+   Outlook Temperature Humidity    Wind Target
+3    rain        mild     high    weak    yes
+4    rain        cool   normal    weak    yes
+5    rain        cool   normal  Strong     no
+9    rain        mild   normal    weak    yes
+Grouped Attribute Values 
+    Outlook Temperature Humidity    Wind Target
+0    sunny         hot     high    weak     no
+1    sunny         hot     high  Strong     no
+7    sunny        mild     high    weak     no
+8    sunny        cool   normal    weak    yes
+10   sunny        mild   normal  Strong    yes
+Target attribute class count(Yes/No)= {'yes': 4}
+Total no of instances/records associated with overcast is: 4
+Probability of Class yes is: 1.0000
+Probability of Class yes is: 1.0000
+Target attribute class count(Yes/No)= {'yes': 3, 'no': 1}
+Total no of instances/records associated with rain is: 4
+Probability of Class no is: 0.2500
+Probability of Class yes is: 0.7500
+Target attribute class count(Yes/No)= {'no': 3, 'yes': 2}
+Total no of instances/records associated with sunny is: 5
+Probability of Class no is: 0.4000
+Probability of Class yes is: 0.6000
+Target attribute class count(Yes/No)= {'no': 4, 'yes': 9}
+Total no of instances/records associated with S is: 13
+Probability of Class no is: 0.3077
+Probability of Class yes is: 0.6923
+Information gain of  Outlook  is :  0.2674250655956548
+
+
+-----Information Gain Calculation of  Temperature  --------
+Grouped Attribute Values 
+     Outlook Temperature Humidity    Wind Target
+4      rain        cool   normal    weak    yes
+5      rain        cool   normal  Strong     no
+6  overcast        cool   normal  Strong    yes
+8     sunny        cool   normal    weak    yes
+Grouped Attribute Values 
+      Outlook Temperature Humidity    Wind Target
+0      sunny         hot     high    weak     no
+1      sunny         hot     high  Strong     no
+2   overcast         hot     high    weak    yes
+12  overcast         hot   normal    weak    yes
+Grouped Attribute Values 
+      Outlook Temperature Humidity    Wind Target
+3       rain        mild     high    weak    yes
+7      sunny        mild     high    weak     no
+9       rain        mild   normal    weak    yes
+10     sunny        mild   normal  Strong    yes
+11  overcast        mild     high  Strong    yes
+Target attribute class count(Yes/No)= {'yes': 3, 'no': 1}
+Total no of instances/records associated with cool is: 4
+Probability of Class no is: 0.2500
+Probability of Class yes is: 0.7500
+Target attribute class count(Yes/No)= {'no': 2, 'yes': 2}
+Total no of instances/records associated with hot is: 4
+Probability of Class no is: 0.5000
+Probability of Class yes is: 0.5000
+Target attribute class count(Yes/No)= {'yes': 4, 'no': 1}
+Total no of instances/records associated with mild is: 5
+Probability of Class no is: 0.2000
+Probability of Class yes is: 0.8000
+Target attribute class count(Yes/No)= {'no': 4, 'yes': 9}
+Total no of instances/records associated with S is: 13
+Probability of Class no is: 0.3077
+Probability of Class yes is: 0.6923
+Information gain of  Temperature  is :  0.05551064235231107
+
+
+-----Information Gain Calculation of  Humidity  --------
+Grouped Attribute Values 
+      Outlook Temperature Humidity    Wind Target
+0      sunny         hot     high    weak     no
+1      sunny         hot     high  Strong     no
+2   overcast         hot     high    weak    yes
+3       rain        mild     high    weak    yes
+7      sunny        mild     high    weak     no
+11  overcast        mild     high  Strong    yes
+Grouped Attribute Values 
+      Outlook Temperature Humidity    Wind Target
+4       rain        cool   normal    weak    yes
+5       rain        cool   normal  Strong     no
+6   overcast        cool   normal  Strong    yes
+8      sunny        cool   normal    weak    yes
+9       rain        mild   normal    weak    yes
+10     sunny        mild   normal  Strong    yes
+12  overcast         hot   normal    weak    yes
+Target attribute class count(Yes/No)= {'no': 3, 'yes': 3}
+Total no of instances/records associated with high is: 6
+Probability of Class no is: 0.5000
+Probability of Class yes is: 0.5000
+Target attribute class count(Yes/No)= {'yes': 6, 'no': 1}
+Total no of instances/records associated with normal is: 7
+Probability of Class no is: 0.1429
+Probability of Class yes is: 0.8571
+Target attribute class count(Yes/No)= {'no': 4, 'yes': 9}
+Total no of instances/records associated with S is: 13
+Probability of Class no is: 0.3077
+Probability of Class yes is: 0.6923
+Information gain of  Humidity  is :  0.11036014405977657
+
+
+-----Information Gain Calculation of  Wind  --------
+Grouped Attribute Values 
+      Outlook Temperature Humidity    Wind Target
+1      sunny         hot     high  Strong     no
+5       rain        cool   normal  Strong     no
+6   overcast        cool   normal  Strong    yes
+10     sunny        mild   normal  Strong    yes
+11  overcast        mild     high  Strong    yes
+Grouped Attribute Values 
+      Outlook Temperature Humidity  Wind Target
+0      sunny         hot     high  weak     no
+2   overcast         hot     high  weak    yes
+3       rain        mild     high  weak    yes
+4       rain        cool   normal  weak    yes
+7      sunny        mild     high  weak     no
+8      sunny        cool   normal  weak    yes
+9       rain        mild   normal  weak    yes
+12  overcast         hot   normal  weak    yes
+Target attribute class count(Yes/No)= {'no': 2, 'yes': 3}
+Total no of instances/records associated with Strong is: 5
+Probability of Class no is: 0.4000
+Probability of Class yes is: 0.6000
+Target attribute class count(Yes/No)= {'no': 2, 'yes': 6}
+Total no of instances/records associated with weak is: 8
+Probability of Class no is: 0.2500
+Probability of Class yes is: 0.7500
+Target attribute class count(Yes/No)= {'no': 4, 'yes': 9}
+Total no of instances/records associated with S is: 13
+Probability of Class no is: 0.3077
+Probability of Class yes is: 0.6923
+Information gain of  Wind  is :  0.01780102730053701
+
+Attribute with the maximum gain is:  Outlook
+
+
+-----Information Gain Calculation of  Temperature  --------
+Grouped Attribute Values 
+   Outlook Temperature Humidity    Wind Target
+4    rain        cool   normal    weak    yes
+5    rain        cool   normal  Strong     no
+Grouped Attribute Values 
+   Outlook Temperature Humidity  Wind Target
+3    rain        mild     high  weak    yes
+9    rain        mild   normal  weak    yes
+Target attribute class count(Yes/No)= {'yes': 1, 'no': 1}
+Total no of instances/records associated with cool is: 2
+Probability of Class no is: 0.5000
+Probability of Class yes is: 0.5000
+Target attribute class count(Yes/No)= {'yes': 2}
+Total no of instances/records associated with mild is: 2
+Probability of Class yes is: 1.0000
+Probability of Class yes is: 1.0000
+Target attribute class count(Yes/No)= {'yes': 3, 'no': 1}
+Total no of instances/records associated with S-rain is: 4
+Probability of Class no is: 0.2500
+Probability of Class yes is: 0.7500
+Information gain of  Temperature  is :  0.31127812445913283
+
+
+-----Information Gain Calculation of  Humidity  --------
+Grouped Attribute Values 
+   Outlook Temperature Humidity  Wind Target
+3    rain        mild     high  weak    yes
+Grouped Attribute Values 
+   Outlook Temperature Humidity    Wind Target
+4    rain        cool   normal    weak    yes
+5    rain        cool   normal  Strong     no
+9    rain        mild   normal    weak    yes
+Target attribute class count(Yes/No)= {'yes': 1}
+Total no of instances/records associated with high is: 1
+Probability of Class yes is: 1.0000
+Probability of Class yes is: 1.0000
+Target attribute class count(Yes/No)= {'yes': 2, 'no': 1}
+Total no of instances/records associated with normal is: 3
+Probability of Class no is: 0.3333
+Probability of Class yes is: 0.6667
+Target attribute class count(Yes/No)= {'yes': 3, 'no': 1}
+Total no of instances/records associated with S-rain is: 4
+Probability of Class no is: 0.2500
+Probability of Class yes is: 0.7500
+Information gain of  Humidity  is :  0.12255624891826566
+
+
+-----Information Gain Calculation of  Wind  --------
+Grouped Attribute Values 
+   Outlook Temperature Humidity    Wind Target
+5    rain        cool   normal  Strong     no
+Grouped Attribute Values 
+   Outlook Temperature Humidity  Wind Target
+3    rain        mild     high  weak    yes
+4    rain        cool   normal  weak    yes
+9    rain        mild   normal  weak    yes
+Target attribute class count(Yes/No)= {'no': 1}
+Total no of instances/records associated with Strong is: 1
+Probability of Class no is: 1.0000
+Probability of Class no is: 1.0000
+Target attribute class count(Yes/No)= {'yes': 3}
+Total no of instances/records associated with weak is: 3
+Probability of Class yes is: 1.0000
+Probability of Class yes is: 1.0000
+Target attribute class count(Yes/No)= {'yes': 3, 'no': 1}
+Total no of instances/records associated with S-rain is: 4
+Probability of Class no is: 0.2500
+Probability of Class yes is: 0.7500
+Information gain of  Wind  is :  0.8112781244591328
+
+Attribute with the maximum gain is:  Wind
+
+
+-----Information Gain Calculation of  Temperature  --------
+Grouped Attribute Values 
+   Outlook Temperature Humidity  Wind Target
+8   sunny        cool   normal  weak    yes
+Grouped Attribute Values 
+   Outlook Temperature Humidity    Wind Target
+0   sunny         hot     high    weak     no
+1   sunny         hot     high  Strong     no
+Grouped Attribute Values 
+    Outlook Temperature Humidity    Wind Target
+7    sunny        mild     high    weak     no
+10   sunny        mild   normal  Strong    yes
+Target attribute class count(Yes/No)= {'yes': 1}
+Total no of instances/records associated with cool is: 1
+Probability of Class yes is: 1.0000
+Probability of Class yes is: 1.0000
+Target attribute class count(Yes/No)= {'no': 2}
+Total no of instances/records associated with hot is: 2
+Probability of Class no is: 1.0000
+Probability of Class no is: 1.0000
+Target attribute class count(Yes/No)= {'no': 1, 'yes': 1}
+Total no of instances/records associated with mild is: 2
+Probability of Class no is: 0.5000
+Probability of Class yes is: 0.5000
+Target attribute class count(Yes/No)= {'no': 3, 'yes': 2}
+Total no of instances/records associated with S-sunny is: 5
+Probability of Class no is: 0.4000
+Probability of Class yes is: 0.6000
+Information gain of  Temperature  is :  0.5709505944546686
+
+
+-----Information Gain Calculation of  Humidity  --------
+Grouped Attribute Values 
+   Outlook Temperature Humidity    Wind Target
+0   sunny         hot     high    weak     no
+1   sunny         hot     high  Strong     no
+7   sunny        mild     high    weak     no
+Grouped Attribute Values 
+    Outlook Temperature Humidity    Wind Target
+8    sunny        cool   normal    weak    yes
+10   sunny        mild   normal  Strong    yes
+Target attribute class count(Yes/No)= {'no': 3}
+Total no of instances/records associated with high is: 3
+Probability of Class no is: 1.0000
+Probability of Class no is: 1.0000
+Target attribute class count(Yes/No)= {'yes': 2}
+Total no of instances/records associated with normal is: 2
+Probability of Class yes is: 1.0000
+Probability of Class yes is: 1.0000
+Target attribute class count(Yes/No)= {'no': 3, 'yes': 2}
+Total no of instances/records associated with S-sunny is: 5
+Probability of Class no is: 0.4000
+Probability of Class yes is: 0.6000
+Information gain of  Humidity  is :  0.9709505944546686
+
+
+-----Information Gain Calculation of  Wind  --------
+Grouped Attribute Values 
+    Outlook Temperature Humidity    Wind Target
+1    sunny         hot     high  Strong     no
+10   sunny        mild   normal  Strong    yes
+Grouped Attribute Values 
+   Outlook Temperature Humidity  Wind Target
+0   sunny         hot     high  weak     no
+7   sunny        mild     high  weak     no
+8   sunny        cool   normal  weak    yes
+Target attribute class count(Yes/No)= {'no': 1, 'yes': 1}
+Total no of instances/records associated with Strong is: 2
+Probability of Class no is: 0.5000
+Probability of Class yes is: 0.5000
+Target attribute class count(Yes/No)= {'no': 2, 'yes': 1}
+Total no of instances/records associated with weak is: 3
+Probability of Class no is: 0.3333
+Probability of Class yes is: 0.6667
+Target attribute class count(Yes/No)= {'no': 3, 'yes': 2}
+Total no of instances/records associated with S-sunny is: 5
+Probability of Class no is: 0.4000
+Probability of Class yes is: 0.6000
+Information gain of  Wind  is :  0.01997309402197489
+
+Attribute with the maximum gain is:  Humidity
+
+The Resultant Decision Tree is:
+{'Outlook': {'overcast': 'yes',
+             'rain': {'Wind': {'Strong': 'no', 'weak': 'yes'}},
+             'sunny': {'Humidity': {'high': 'no', 'normal': 'yes'}}}}
